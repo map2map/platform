@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+httpx
+authlib
+python-dotenv
+motor                     # async MongoDB driver
+celery
+redis
