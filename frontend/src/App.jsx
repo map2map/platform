@@ -1,5 +1,7 @@
 // File: src/App.jsx
 import { useState, useEffect } from 'react'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import AuthCallback from './components/AuthCallback'
 
 function App() {
   const [user, setUser] = useState(null)
@@ -80,98 +82,110 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 text-gray-100 flex">
-      <aside className="w-64 bg-slate-800 p-4 hidden sm:block h-screen sticky top-0 shadow-xl">
-        <h2 className="text-2xl font-bold text-white mb-8">Map2Map</h2>
-        <nav className="space-y-4">
-          <div className="text-gray-400 hover:text-white cursor-pointer">Dashboard</div>
-          <div className="text-gray-400 hover:text-white cursor-pointer">Locations</div>
-          <div className="text-gray-400 hover:text-white cursor-pointer">Reviews</div>
-          <div className="text-gray-400 hover:text-white cursor-pointer">Profile</div>
-        </nav>
-        <div className="absolute bottom-4 left-4 right-4">
-          <button
-            onClick={logout}
-            className="w-full text-gray-400 hover:text-white text-left py-2"
-          >
-            Sign out
-          </button>
-        </div>
-      </aside>
-
-      <main className="flex-1 p-6 overflow-auto">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex justify-between items-center mb-8">
-            <h1 className="text-3xl font-bold text-white">Customer Portal</h1>
-            <div className="flex items-center gap-4">
-              <div className="text-right">
-                <p className="text-sm text-gray-400">{user.email}</p>
-                <p className="text-white">{user.name}</p>
+    <Router>
+      <Routes>
+        <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route
+          path="/*"
+          element={
+            <div className="min-h-screen bg-gray-100">
+              <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-300 ease-in-out lg:translate-x-0`}>
+                <aside className="w-64 bg-slate-800 p-4 hidden sm:block h-screen sticky top-0 shadow-xl">
+                  <h2 className="text-2xl font-bold text-white mb-8">Map2Map</h2>
+                  <nav className="space-y-4">
+                    <div className="text-gray-400 hover:text-white cursor-pointer">Dashboard</div>
+                    <div className="text-gray-400 hover:text-white cursor-pointer">Locations</div>
+                    <div className="text-gray-400 hover:text-white cursor-pointer">Reviews</div>
+                    <div className="text-gray-400 hover:text-white cursor-pointer">Profile</div>
+                  </nav>
+                  <div className="absolute bottom-4 left-4 right-4">
+                    <button
+                      onClick={logout}
+                      className="w-full text-gray-400 hover:text-white text-left py-2"
+                    >
+                      Sign out
+                    </button>
+                  </div>
+                </aside>
               </div>
-              {user.picture && (
-                <img
-                  src={user.picture}
-                  alt={user.name}
-                  className="w-10 h-10 rounded-full"
-                />
-              )}
-            </div>
-          </div>
 
-          <section className="space-y-10">
-            <div className="bg-slate-800 p-4 rounded-xl">
-              <h2 className="text-xl font-semibold">Welcome, {user.name}</h2>
-              <p className="text-sm text-gray-400">{user.email}</p>
-            </div>
+              <div className="lg:pl-64">
+                <div className="max-w-7xl mx-auto">
+                  <div className="flex justify-between items-center mb-8">
+                    <h1 className="text-3xl font-bold text-white">Customer Portal</h1>
+                    <div className="flex items-center gap-4">
+                      <div className="text-right">
+                        <p className="text-sm text-gray-400">{user.email}</p>
+                        <p className="text-white">{user.name}</p>
+                      </div>
+                      {user.picture && (
+                        <img
+                          src={user.picture}
+                          alt={user.name}
+                          className="w-10 h-10 rounded-full"
+                        />
+                      )}
+                    </div>
+                  </div>
 
-            <div className="bg-slate-800 p-4 rounded-xl">
-              <h3 className="text-lg font-bold mb-2">Chatbot Assistant</h3>
-              <div className="flex gap-2">
-                <input
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && askChatbot()}
-                  className="flex-1 rounded bg-slate-900 border border-slate-600 px-3 py-2"
-                  placeholder="Ask something about your business..."
-                />
-                <button
-                  onClick={askChatbot}
-                  disabled={isLoading}
-                  className="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded text-white"
-                >
-                  {isLoading ? 'Thinking...' : 'Ask'}
-                </button>
-              </div>
-              {chatResponse && (
-                <div className="mt-4 p-3 bg-slate-900 border border-slate-700 rounded">
-                  <strong>Bot:</strong> {chatResponse}
+                  <section className="space-y-10">
+                    <div className="bg-slate-800 p-4 rounded-xl">
+                      <h2 className="text-xl font-semibold">Welcome, {user.name}</h2>
+                      <p className="text-sm text-gray-400">{user.email}</p>
+                    </div>
+
+                    <div className="bg-slate-800 p-4 rounded-xl">
+                      <h3 className="text-lg font-bold mb-2">Chatbot Assistant</h3>
+                      <div className="flex gap-2">
+                        <input
+                          value={query}
+                          onChange={(e) => setQuery(e.target.value)}
+                          onKeyDown={(e) => e.key === 'Enter' && askChatbot()}
+                          className="flex-1 rounded bg-slate-900 border border-slate-600 px-3 py-2"
+                          placeholder="Ask something about your business..."
+                        />
+                        <button
+                          onClick={askChatbot}
+                          disabled={isLoading}
+                          className="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded text-white"
+                        >
+                          {isLoading ? 'Thinking...' : 'Ask'}
+                        </button>
+                      </div>
+                      {chatResponse && (
+                        <div className="mt-4 p-3 bg-slate-900 border border-slate-700 rounded">
+                          <strong>Bot:</strong> {chatResponse}
+                        </div>
+                      )}
+                    </div>
+
+                    {business && (
+                      <div className="bg-slate-800 p-4 rounded-xl">
+                        <h3 className="text-lg font-bold mb-2">Business Info</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="text-sm">Name</label>
+                            <input value={business.name} readOnly className="w-full mt-1 rounded bg-slate-900 border border-slate-700 px-3 py-2" />
+                          </div>
+                          <div>
+                            <label className="text-sm">Phone</label>
+                            <input value={business.phone} readOnly className="w-full mt-1 rounded bg-slate-900 border border-slate-700 px-3 py-2" />
+                          </div>
+                          <div className="md:col-span-2">
+                            <label className="text-sm">Address</label>
+                            <textarea value={business.address} readOnly className="w-full mt-1 rounded bg-slate-900 border border-slate-700 px-3 py-2"></textarea>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </section>
                 </div>
-              )}
-            </div>
-
-            {business && (
-              <div className="bg-slate-800 p-4 rounded-xl">
-                <h3 className="text-lg font-bold mb-2">Business Info</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm">Name</label>
-                    <input value={business.name} readOnly className="w-full mt-1 rounded bg-slate-900 border border-slate-700 px-3 py-2" />
-                  </div>
-                  <div>
-                    <label className="text-sm">Phone</label>
-                    <input value={business.phone} readOnly className="w-full mt-1 rounded bg-slate-900 border border-slate-700 px-3 py-2" />
-                  </div>
-                  <div className="md:col-span-2">
-                    <label className="text-sm">Address</label>
-                    <textarea value={business.address} readOnly className="w-full mt-1 rounded bg-slate-900 border border-slate-700 px-3 py-2"></textarea>
-                  </div>
-                </div>
               </div>
-            )}
-          </section>
-        </div>
-      </main>
-    </div>
+            </div>
+          }
+        />
+      </Routes>
+    </Router>
   )
 }
 
