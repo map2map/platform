@@ -10,8 +10,20 @@ import jwt as pyjwt
 
 router = APIRouter()
 
-# Load OAuth 2.0 credentials
-CLIENT_SECRETS_FILE = "client_secrets.json"
+# Load OAuth 2.0 credentials from environment variables
+CLIENT_CONFIG = {
+    "web": {
+        "client_id": os.getenv("GOOGLE_CLIENT_ID"),
+        "project_id": "map2map",
+        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+        "token_uri": "https://oauth2.googleapis.com/token",
+        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+        "client_secret": os.getenv("GOOGLE_CLIENT_SECRET"),
+        "redirect_uris": [os.getenv("GOOGLE_REDIRECT_URI", "http://localhost:8000/auth/callback")],
+        "javascript_origins": [os.getenv("FRONTEND_URL", "http://localhost:5173")]
+    }
+}
+
 SCOPES = ['https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/userinfo.profile']
 
 # Secret key for JWT
@@ -28,10 +40,10 @@ def create_access_token(data: dict):
 @router.get("/login")
 async def login():
     try:
-        flow = Flow.from_client_secrets_file(
-            CLIENT_SECRETS_FILE,
+        flow = Flow.from_client_config(
+            CLIENT_CONFIG,
             scopes=SCOPES,
-            redirect_uri="http://localhost:8000/auth/callback"
+            redirect_uri=os.getenv("GOOGLE_REDIRECT_URI", "http://localhost:8000/auth/callback")
         )
         authorization_url, state = flow.authorization_url(
             access_type='offline',
@@ -44,10 +56,10 @@ async def login():
 @router.get("/callback")
 async def callback(request: Request):
     try:
-        flow = Flow.from_client_secrets_file(
-            CLIENT_SECRETS_FILE,
+        flow = Flow.from_client_config(
+            CLIENT_CONFIG,
             scopes=SCOPES,
-            redirect_uri="http://localhost:8000/auth/callback"
+            redirect_uri=os.getenv("GOOGLE_REDIRECT_URI", "http://localhost:8000/auth/callback")
         )
         
         # Get the authorization code from the request
@@ -73,7 +85,8 @@ async def callback(request: Request):
         access_token = create_access_token(token_data)
         
         # Redirect to frontend with token
-        response = RedirectResponse(url="http://localhost:5173/auth/callback")
+        frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5173")
+        response = RedirectResponse(url=f"{frontend_url}/auth/callback")
         response.set_cookie(
             key="access_token",
             value=access_token,
@@ -109,6 +122,7 @@ async def check_auth(request: Request):
 
 @router.post("/logout")
 async def logout():
-    response = RedirectResponse(url="http://localhost:5173")
+    frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5173")
+    response = RedirectResponse(url=frontend_url)
     response.delete_cookie("access_token")
     return response
