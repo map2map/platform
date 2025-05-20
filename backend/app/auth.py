@@ -48,7 +48,7 @@ async def login():
         flow = Flow.from_client_config(
             CLIENT_CONFIG,
             scopes=SCOPES,
-            redirect_uri="https://platform-krns.onrender.com/auth/callback"  # Production URL
+            redirect_uri="https://platform-frontend-acoh.onrender.com/auth/callback"  # Updated to match callback
         )
         authorization_url, state = flow.authorization_url(
             access_type='offline',
