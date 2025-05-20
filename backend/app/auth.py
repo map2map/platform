@@ -19,8 +19,8 @@ CLIENT_CONFIG = {
         "token_uri": "https://oauth2.googleapis.com/token",
         "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
         "client_secret": os.getenv("GOOGLE_CLIENT_SECRET"),
-        "redirect_uris": ["https://platform-krns.onrender.com/auth/callback"],  # Production URL
-        "javascript_origins": ["https://platform-frontend-acoh.onrender.com"]  # Frontend URL
+        "redirect_uris": ["https://platform-frontend-acoh.onrender.com/auth/callback"],  # Updated to match frontend URL
+        "javascript_origins": ["https://platform-frontend-acoh.onrender.com"]
     }
 }
 
@@ -64,7 +64,7 @@ async def callback(request: Request):
         flow = Flow.from_client_config(
             CLIENT_CONFIG,
             scopes=SCOPES,
-            redirect_uri="https://platform-krns.onrender.com/auth/callback"  # Production URL
+            redirect_uri="https://platform-frontend-acoh.onrender.com/auth/callback"  # Updated to match frontend URL
         )
         
         # Get the authorization code from the request
