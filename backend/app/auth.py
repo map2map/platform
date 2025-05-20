@@ -24,7 +24,12 @@ CLIENT_CONFIG = {
     }
 }
 
-SCOPES = ['https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/userinfo.profile']
+# Update scopes to include openid
+SCOPES = [
+    'openid',
+    'https://www.googleapis.com/auth/userinfo.email',
+    'https://www.googleapis.com/auth/userinfo.profile'
+]
 
 # Secret key for JWT
 SECRET_KEY = os.getenv("JWT_SECRET_KEY", "your-secret-key-here")
