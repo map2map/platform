@@ -19,8 +19,8 @@ CLIENT_CONFIG = {
         "token_uri": "https://oauth2.googleapis.com/token",
         "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
         "client_secret": os.getenv("GOOGLE_CLIENT_SECRET"),
-        "redirect_uris": [os.getenv("GOOGLE_REDIRECT_URI", "http://localhost:8000/auth/callback")],
-        "javascript_origins": [os.getenv("FRONTEND_URL", "http://localhost:5173")]
+        "redirect_uris": ["https://platform-krns.onrender.com/auth/callback"],  # Production URL
+        "javascript_origins": ["https://platform-frontend-acoh.onrender.com"]  # Frontend URL
     }
 }
 
@@ -43,7 +43,7 @@ async def login():
         flow = Flow.from_client_config(
             CLIENT_CONFIG,
             scopes=SCOPES,
-            redirect_uri=os.getenv("GOOGLE_REDIRECT_URI", "http://localhost:8000/auth/callback")
+            redirect_uri="https://platform-krns.onrender.com/auth/callback"  # Production URL
         )
         authorization_url, state = flow.authorization_url(
             access_type='offline',
@@ -59,7 +59,7 @@ async def callback(request: Request):
         flow = Flow.from_client_config(
             CLIENT_CONFIG,
             scopes=SCOPES,
-            redirect_uri=os.getenv("GOOGLE_REDIRECT_URI", "http://localhost:8000/auth/callback")
+            redirect_uri="https://platform-krns.onrender.com/auth/callback"  # Production URL
         )
         
         # Get the authorization code from the request
@@ -85,13 +85,12 @@ async def callback(request: Request):
         access_token = create_access_token(token_data)
         
         # Redirect to frontend with token
-        frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5173")
-        response = RedirectResponse(url=f"{frontend_url}/auth/callback")
+        response = RedirectResponse(url="https://platform-frontend-acoh.onrender.com/auth/callback")
         response.set_cookie(
             key="access_token",
             value=access_token,
             httponly=True,
-            secure=False,  # Set to True in production with HTTPS
+            secure=True,  # Set to True for HTTPS
             samesite="lax",
             max_age=86400  # 1 day
         )
@@ -122,7 +121,6 @@ async def check_auth(request: Request):
 
 @router.post("/logout")
 async def logout():
-    frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5173")
-    response = RedirectResponse(url=frontend_url)
+    response = RedirectResponse(url="https://platform-frontend-acoh.onrender.com")
     response.delete_cookie("access_token")
     return response
