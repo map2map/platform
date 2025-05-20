@@ -5,9 +5,26 @@ export default function AuthCallback() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // The token is already set in cookies by the backend
-    // Just redirect to the dashboard
-    navigate('/dashboard');
+    // Check if we're authenticated
+    const checkAuth = async () => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE || 'http://localhost:8000'}/auth/check`, {
+          credentials: 'include'
+        });
+        if (response.ok) {
+          // If authenticated, redirect to root which will show the dashboard
+          navigate('/');
+        } else {
+          // If not authenticated, redirect to login
+          navigate('/');
+        }
+      } catch (error) {
+        console.error('Auth check failed:', error);
+        navigate('/');
+      }
+    };
+
+    checkAuth();
   }, [navigate]);
 
   return (

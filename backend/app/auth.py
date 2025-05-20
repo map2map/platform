@@ -97,7 +97,8 @@ async def callback(request: Request):
             httponly=True,
             secure=True,  # Set to True for HTTPS
             samesite="lax",
-            max_age=86400  # 1 day
+            max_age=86400,  # 1 day
+            domain=".onrender.com"  # Allow cookie to be shared across subdomains
         )
         return response
     except Exception as e:
