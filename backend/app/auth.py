@@ -72,7 +72,8 @@ async def login():
         )
         
         # Generate the authorization URL with additional parameters
-        authorization_url = flow.authorization_url(
+        # Note: authorization_url() returns a tuple of (url, state)
+        authorization_url, state = flow.authorization_url(
             access_type='offline',
             include_granted_scopes='true',
             prompt='select_account',  # Force account selection
@@ -80,8 +81,11 @@ async def login():
         )
         
         # Store the state in the session or database if needed
-        # For now, we'll just use the state from the URL
-        return RedirectResponse(authorization_url)
+        # For now, we'll just log it for debugging
+        print(f"Generated OAuth state: {state}")
+        
+        # Return a proper redirect response
+        return RedirectResponse(url=authorization_url)
         
     except Exception as e:
         print(f"Login error: {str(e)}")
