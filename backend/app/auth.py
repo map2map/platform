@@ -107,11 +107,18 @@ async def callback(request: Request):
         }
         access_token = create_access_token(token_data)
         
-        # Redirect to frontend with token in URL hash
+        # Build the frontend URL with token
         frontend_url = "https://platform-frontend-acoh.onrender.com/auth/callback"
-        response = RedirectResponse(
-            url=f"{frontend_url}#token={access_token}",
-            status_code=status.HTTP_302_FOUND
+        redirect_url = f"{frontend_url}#token={access_token}"
+        
+        # Create response with CORS headers
+        response = JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content={
+                "access_token": access_token,
+                "token_type": "bearer",
+                "redirect": "/"
+            }
         )
         
         # Set the HTTP-only cookie
@@ -123,6 +130,18 @@ async def callback(request: Request):
             samesite="lax",
             max_age=86400,  # 1 day
             domain="platform-frontend-acoh.onrender.com"  # Set to exact domain
+        )
+        
+        # Add CORS headers
+        response.headers["Access-Control-Allow-Origin"] = "https://platform-frontend-acoh.onrender.com"
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+        
+        # For development, also allow localhost
+        response.headers["Access-Control-Allow-Origin"] = os.getenv(
+            "FRONTEND_URL", 
+            "https://platform-frontend-acoh.onrender.com,http://localhost:5173"
         )
         return response
     except Exception as e:

@@ -18,32 +18,73 @@ function App() {
 
   const checkAuth = async () => {
     try {
+      // First try to get user from cookie
       const response = await fetch(`${import.meta.env.VITE_API_BASE || 'http://localhost:8000'}/auth/check`, {
-        credentials: 'include'
-      })
+        credentials: 'include',
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
+      });
+      
       if (response.ok) {
-        const data = await response.json()
-        setUser(data.user)
+        const data = await response.json();
+        setUser(data.user);
+        return true;
       }
+      
+      // If cookie auth failed, try token from localStorage
+      const token = localStorage.getItem('auth_token');
+      if (token) {
+        const tokenResponse = await fetch(`${import.meta.env.VITE_API_BASE || 'http://localhost:8000'}/auth/check`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include'
+        });
+        
+        if (tokenResponse.ok) {
+          const data = await tokenResponse.json();
+          setUser(data.user);
+          return true;
+        }
+      }
+      
+      // If we get here, no valid auth method was found
+      setUser(null);
+      return false;
+      
     } catch (error) {
-      console.error('Auth check failed:', error)
-      setUser(null)
+      console.error('Auth check failed:', error);
+      setUser(null);
+      return false;
     }
   }
 
   const loginWithGoogle = () => {
-    window.location.href = `${import.meta.env.VITE_API_BASE || 'http://localhost:8000'}/auth/login`
+    // Clear any existing auth state
+    localStorage.removeItem('auth_token');
+    // Redirect to backend login endpoint
+    window.location.href = `${import.meta.env.VITE_API_BASE || 'http://localhost:8000'}/auth/login`;
   }
 
   const logout = async () => {
     try {
       await fetch(`${import.meta.env.VITE_API_BASE || 'http://localhost:8000'}/auth/logout`, {
         method: 'POST',
-        credentials: 'include'
-      })
-      setUser(null)
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      // Clear all auth state
+      localStorage.removeItem('auth_token');
+      setUser(null);
+      // Force a full page reload to clear any state
+      window.location.href = '/';
     } catch (error) {
-      console.error('Logout failed:', error)
+      console.error('Logout failed:', error);
     }
   }
 
