@@ -177,10 +177,11 @@ function App() {
   )
 
   return (
-    <Router>
+    <Router basename={import.meta.env.PROD ? '' : '/'}>
       <Routes>
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/" element={user ? <Dashboard /> : <LoginPage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   )
