@@ -63,35 +63,84 @@ def create_access_token(data: dict):
 @router.get("/login")
 async def login():
     try:
+        # Create a new flow for each login attempt
         flow = Flow.from_client_config(
             CLIENT_CONFIG,
             scopes=SCOPES,
-            redirect_uri="https://platform-krns.onrender.com/auth/callback"  # Backend URL
+            redirect_uri=CLIENT_CONFIG["web"]["redirect_uris"][0],
+            state=os.urandom(16).hex()  # Generate a random state
         )
-        authorization_url, state = flow.authorization_url(
+        
+        # Generate the authorization URL with additional parameters
+        authorization_url = flow.authorization_url(
             access_type='offline',
-            include_granted_scopes='true'
+            include_granted_scopes='true',
+            prompt='select_account',  # Force account selection
+            hd='*'  # Allow any Google domain
         )
+        
+        # Store the state in the session or database if needed
+        # For now, we'll just use the state from the URL
         return RedirectResponse(authorization_url)
+        
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to initialize OAuth flow: {str(e)}")
+        print(f"Login error: {str(e)}")
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Failed to initialize OAuth flow: {str(e)}"
+        )
+
+# In-memory store for OAuth states (use a proper cache in production)
+oauth_states = {}
 
 @router.get("/callback")
 async def callback(request: Request):
     try:
-        flow = Flow.from_client_config(
-            CLIENT_CONFIG,
-            scopes=SCOPES,
-            redirect_uri="https://platform-krns.onrender.com/auth/callback"  # Backend URL
-        )
-        
-        # Get the authorization code from the request
+        # Get the authorization code and state from the request
         code = request.query_params.get("code")
+        state = request.query_params.get("state")
+        error = request.query_params.get("error")
+        
+        if error:
+            raise HTTPException(
+                status_code=400,
+                detail=f"OAuth error: {error}. Description: {request.query_params.get('error_description', 'No description')}"
+            )
+            
         if not code:
             raise HTTPException(status_code=400, detail="Authorization code not found")
         
+        # Verify state parameter to prevent CSRF
+        if not state:
+            raise HTTPException(status_code=400, detail="State parameter missing")
+            
+        # In a production app, you would validate the state against your session
+        # For now, we'll just log it
+        print(f"Received OAuth state: {state}")
+        
+        # Initialize a new flow for each request
+        flow = Flow.from_client_config(
+            CLIENT_CONFIG,
+            scopes=SCOPES,
+            redirect_uri=CLIENT_CONFIG["web"]["redirect_uris"][0],
+            state=state  # Pass the state back for validation
+        )
+        
         # Exchange the code for credentials
-        flow.fetch_token(code=code)
+        try:
+            flow.fetch_token(
+                code=code,
+                # Add these parameters to prevent token reuse issues
+                client_secret=CLIENT_CONFIG["web"]["client_secret"],
+                include_granted_scopes='true'
+            )
+        except Exception as e:
+            print(f"Token exchange failed: {str(e)}")
+            raise HTTPException(
+                status_code=400,
+                detail=f"Failed to exchange authorization code: {str(e)}"
+            )
+            
         credentials = flow.credentials
         
         # Get user info from Google
