@@ -5,26 +5,46 @@ export default function AuthCallback() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // First, check if we have an access token in the URL hash
+    const checkForToken = () => {
+      // If there's a hash with token info, the backend has already set the cookie
+      // and we can proceed to check authentication
+      if (window.location.hash) {
+        // Remove the hash from the URL without refreshing
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+      checkAuth();
+    };
+
     // Check if we're authenticated
     const checkAuth = async () => {
       try {
         const response = await fetch(`${import.meta.env.VITE_API_BASE || 'http://localhost:8000'}/auth/check`, {
-          credentials: 'include'
+          credentials: 'include',
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+          }
         });
+        
         if (response.ok) {
           // If authenticated, redirect to root which will show the dashboard
-          navigate('/');
+          navigate('/', { replace: true });
         } else {
           // If not authenticated, redirect to login
-          navigate('/');
+          console.error('Authentication failed');
+          navigate('/login', { replace: true });
         }
       } catch (error) {
         console.error('Auth check failed:', error);
-        navigate('/');
+        navigate('/', { replace: true });
       }
     };
 
-    checkAuth();
+    // Small delay to ensure the cookie is set
+    const timer = setTimeout(checkForToken, 500);
+    return () => clearTimeout(timer);
   }, [navigate]);
 
   return (

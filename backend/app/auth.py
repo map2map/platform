@@ -1,5 +1,5 @@
-from fastapi import APIRouter, HTTPException, Depends, Request
-from fastapi.responses import RedirectResponse
+from fastapi import APIRouter, HTTPException, Depends, Request, status
+from fastapi.responses import RedirectResponse, JSONResponse
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
@@ -7,6 +7,24 @@ import os
 import json
 from datetime import datetime, timedelta
 import jwt as pyjwt
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI
+
+# This would typically be in your main FastAPI app setup
+app = FastAPI()
+
+# Configure CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://platform-frontend-acoh.onrender.com",
+        "http://localhost:5173"  # For local development
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+    expose_headers=["*"]
+)
 
 router = APIRouter()
 
@@ -89,8 +107,14 @@ async def callback(request: Request):
         }
         access_token = create_access_token(token_data)
         
-        # Redirect to frontend with token
-        response = RedirectResponse(url="https://platform-frontend-acoh.onrender.com/auth/callback")
+        # Redirect to frontend with token in URL hash
+        frontend_url = "https://platform-frontend-acoh.onrender.com/auth/callback"
+        response = RedirectResponse(
+            url=f"{frontend_url}#token={access_token}",
+            status_code=status.HTTP_302_FOUND
+        )
+        
+        # Set the HTTP-only cookie
         response.set_cookie(
             key="access_token",
             value=access_token,
@@ -98,7 +122,7 @@ async def callback(request: Request):
             secure=True,  # Set to True for HTTPS
             samesite="lax",
             max_age=86400,  # 1 day
-            domain=".onrender.com"  # Allow cookie to be shared across subdomains
+            domain="platform-frontend-acoh.onrender.com"  # Set to exact domain
         )
         return response
     except Exception as e:
