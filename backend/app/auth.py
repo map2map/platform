@@ -62,7 +62,7 @@ async def callback(credential_data: GoogleCredential):
     try:
         # Decode the Google ID token
         credential = credential_data.credential
-        decoded_token = jwt.decode(credential, options={"verify_signature": False})
+        decoded_token = pyjwt.decode(credential, options={"verify_signature": False})
         
         # Create JWT token
         token_data = {
