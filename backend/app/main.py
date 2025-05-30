@@ -32,3 +32,12 @@ async def root():
 @app.get("/favicon.ico")
 async def favicon():
     return FileResponse("static/favicon.ico")
+
+@app.post("/auth/callback")
+async def auth_callback(payload: dict):
+    # Validate Google credential and retrieve user info
+    user = await verify_google_credential(payload.get("credential"))
+    # Create JWT for your application
+    jwt = create_jwt_for_user(user)
+
+    return {"token": jwt, "user": {"name": user.name, "email": user.email}}
