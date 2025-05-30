@@ -11,8 +11,9 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:5173",  # Local development
-        "https://platform-frontend-acoh.onrender.com"  # Production
+        "https://platform-frontend-acoh.onrender.com",
+        "https://map2map.com",  # Production
+        "http://localhost:5173"  # For local development
     ],
     allow_credentials=True,
     allow_methods=["*"],

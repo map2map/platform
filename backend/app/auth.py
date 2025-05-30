@@ -19,6 +19,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "https://platform-frontend-acoh.onrender.com",
+        "https://map2map.com",  # Production
         "http://localhost:5173"  # For local development
     ],
     allow_credentials=True,
