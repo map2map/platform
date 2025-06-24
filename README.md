@@ -1,5 +1,5 @@
 # platform
-Customer Portal - This is the private, proprietary repository for **Map2Map™ ( Yabloko Labs )** — powering our customer-facing SaaS portal built for Google Business Profile (GBP) management.
+Customer Portal - This is the proprietary repository for **Map2Map™ ( Yabloko Labs )** — powering our customer-facing SaaS portal built for Google Business Profile (GBP) management.
 
 
 ## ✨ Features
@@ -14,5 +14,5 @@ Customer Portal - This is the private, proprietary repository for **Map2Map™ (
 - 🕵️‍♂️ Audit logs and field change history
 
 ## License
-This is a private, proprietary repository owned by Map2Map™ ( Yabloko Labs )  
+This is a proprietary repository owned by Map2Map™ ( Yabloko Labs )  
 All rights reserved. Unauthorized use, distribution, or reproduction is strictly prohibited.
